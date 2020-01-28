@@ -7,8 +7,10 @@ import path from 'path';
 import pluralize from 'pluralize';
 import Router from './router';
 import send from 'koa-send';
+import mount from 'koa-mount';
 
 import { isDir } from 'appcd-fs';
+import uiApp from 'appcd-ui';
 import { Server as WebSocketServer } from 'ws';
 
 const logger = appcdLogger('appcd:http:webserver');
@@ -116,6 +118,7 @@ export default class WebServer extends EventEmitter {
 		this.app
 			.use(helmet())
 			.use(bodyParser())
+			.use(mount('/dashboard', uiApp))
 			.use((ctx, next) => {
 				ctx.startTime = new Date();
 				return next()
