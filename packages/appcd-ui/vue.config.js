@@ -1,3 +1,8 @@
 module.exports = {
-  publicPath: '/dashboard'
+  publicPath: '/dashboard',
+  pluginOptions: {
+    apollo: {
+      lintGQL: true
+    }
+  }
 }

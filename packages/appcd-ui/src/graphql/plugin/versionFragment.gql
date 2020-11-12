@@ -1,0 +1,6 @@
+fragment version on PluginVersion {
+  version,
+  path,
+  error,
+  pid
+}

@@ -1,0 +1,7 @@
+fragment view on View {
+  id
+  name
+  icon
+  title
+  group
+}

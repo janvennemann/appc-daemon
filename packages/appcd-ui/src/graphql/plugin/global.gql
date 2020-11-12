@@ -1,0 +1,13 @@
+#import "./versionFragment.gql"
+
+query global {
+  globalPlugins {
+    name,
+    current @client {
+      ...version
+    }
+    versions {
+      ...version
+    }
+  }
+}

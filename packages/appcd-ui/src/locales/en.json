@@ -1,0 +1,13 @@
+{
+  "appcd": {
+    "nav": {
+      "groups": {
+        "core": "Daemon"
+      },
+      "titles": {
+        "status": "Status",
+        "plugins": "Plugins"
+      }
+    }
+  }
+}

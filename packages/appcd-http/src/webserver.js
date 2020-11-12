@@ -8,9 +8,10 @@ import pluralize from 'pluralize';
 import Router from './router';
 import send from 'koa-send';
 import mount from 'koa-mount';
+import url from 'url';
 
 import { isDir } from 'appcd-fs';
-import uiApp from 'appcd-ui';
+import { middleware as uiApp, server as apolloServer } from 'appcd-ui/server';
 import { Server as WebSocketServer } from 'ws';
 
 const logger = appcdLogger('appcd:http:webserver');
@@ -179,8 +180,24 @@ export default class WebServer extends EventEmitter {
 				.on('error', reject);
 
 			// create the websocket server and start listening
-			this.websocketServer = new WebSocketServer({
-				server: this.httpServer
+			this.websocketServer = new WebSocketServer({ noServer: true });
+			this.graphqlWebsocketServer = new WebSocketServer({ noServer: true });
+			logger.log('Install GraphQL subscription handlers');
+			apolloServer.installSubscriptionHandlers(this.graphqlWebsocketServer);
+			logger.log(apolloServer.installSubscriptionHandlers);
+			logger.log(apolloServer.subscriptionServer);
+
+			this.httpServer.on('upgrade', (request, socket, head) => {
+				const pathname = url.parse(request.url).pathname;
+				if (pathname === '/dashboard/graphql') {
+					this.graphqlWebsocketServer.handleUpgrade(request, socket, head, (ws) => {
+						this.graphqlWebsocketServer.emit('connection', ws, request);
+					});
+				} else {
+					this.websocketServer.handleUpgrade(request, socket, head, (ws) => {
+						this.websocketServer.emit('connection', ws, request);
+					});
+				}
 			});
 
 			this.websocketServer.on('connection', (conn, req) => {
@@ -223,22 +240,32 @@ export default class WebServer extends EventEmitter {
 			});
 		}
 
+		if (this.graphqlWebsocketServer) {
+			await new Promise(resolve => {
+				// close the websocket server
+				logger.log('Closing GraphQL WebSocket server');
+				this.graphqlWebsocketServer.close(() => {
+					this.graphqlWebsocketServer = null;
+					resolve();
+				});
+			});
+		}
+
 		if (this.httpServer) {
 			await new Promise(resolve => {
 				// close the http server
 				logger.log('Closing HTTP server');
 				this.httpServer.close(() => {
-					// manually kill any open connections
-					const conns = Object.keys(this.connections);
-					logger.log(pluralize('Dropping %s connection', conns.length), highlight(conns.length));
-					for (const key of conns) {
-						this.connections[key].destroy();
-						delete this.connections[key];
-					}
-
 					this.httpServer = null;
 					resolve();
 				});
+				// manually kill any open connections
+				const conns = Object.keys(this.connections);
+				logger.log(pluralize('Dropping %s connection', conns.length), highlight(conns.length));
+				for (const key of conns) {
+					this.connections[key].destroy();
+					delete this.connections[key];
+				}
 			});
 		}
 	}

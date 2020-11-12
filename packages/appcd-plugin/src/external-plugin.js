@@ -403,6 +403,7 @@ export default class ExternalPlugin extends PluginBase {
 	 */
 	async startParent() {
 		const args = [
+			'--preserve-symlinks',
 			path.resolve(__dirname, '..', 'bin', 'appcd-plugin-host'),
 			this.plugin.path
 		];

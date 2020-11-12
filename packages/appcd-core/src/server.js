@@ -285,7 +285,12 @@ export default class Server {
 
 		this.systems.webserver
 			.use(Dispatcher.callback(telemetryRequest))
-			.on('websocket', (ws, req) => new WebSocketSession(ws, req).on('request', telemetryRequest));
+			.on('websocket', (ws, req) => {
+				if (req.url === '/dashboard/graphql') {
+					return;
+				}
+				new WebSocketSession(ws, req).on('request', telemetryRequest);
+			});
 
 		// start the web server
 		await this.systems.webserver.listen();

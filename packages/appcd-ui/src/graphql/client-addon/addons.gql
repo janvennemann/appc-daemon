@@ -1,0 +1,6 @@
+query addons {
+  clientAddons {
+    id
+    url
+  }
+}

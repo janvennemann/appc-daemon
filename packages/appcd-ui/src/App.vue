@@ -1,32 +1,59 @@
 <template>
-  <div id="app">
-    <div id="nav">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link>
+  <v-app>
+    <div v-if="ready">
+      <router-view />
     </div>
-    <router-view/>
-  </div>
+    <v-content v-else>
+      <v-container fill-height class="justify-center">
+        <v-progress-circular
+          class="app-loadings"
+          indeterminate
+          :size="70"
+          :width="7"
+          color="primary"
+        />
+      </v-container>
+    </v-content>
+
+    <ClientAddonLoader />
+  </v-app>
 </template>
 
-<style>
-#app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-}
+<script>
+export default {
+  metaInfo: {
+    titleTemplate: chunk => chunk ? `${chunk} - Appcd UI [Beta] ` : 'Appcd UI [Beta] '
+  },
+  data () {
+    return {
+      ready: true
+    }
+  },
+  created () {
 
-#nav {
-  padding: 30px;
+  }
 }
+</script>
 
-#nav a {
-  font-weight: bold;
-  color: #2c3e50;
-}
+<style lang="sass">
+@import '~vuetify/src/styles/styles.sass'
 
-#nav a.router-link-exact-active {
-  color: #42b983;
-}
+.v-toolbar
+  .title-link
+    text-decoration: none
+    color: map-deep-get($material-theme, 'text', 'theme')
+.copyright
+  font-size: 0.8rem
+
+.theme--dark
+  &.v-system-bar
+    &.connection-alert
+      z-index: 4
+      top: 64px
+      color: map-deep-get($material-dark, 'text', 'primary')
+      & .v-icon
+        color: map-deep-get($material-dark, 'text', 'primary')
+
+.app-loading
+
 </style>
